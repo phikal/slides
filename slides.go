@@ -225,19 +225,19 @@ func printPage() {
 
 	fmt.Printf("/%s%s %d selectfont\n", font, style, size)
 
-	base := 150
+	base := height/2
 	count := len(lines)
 	if count&1 != 1 {
-		base = 140
+		base -= size/2
 	}
 	for i, line := range lines {
 		if line == "" {
 			continue
 		}
 
-		y, x := base-size*(i-count/2), 20
+		y, x := base-size*(i-count/2), width/20
 		if indent {
-			x = 40
+			x = width/10
 		}
 		fmt.Printf("%d %d moveto ", x, y)
 		printLine(line)
