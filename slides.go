@@ -54,6 +54,20 @@ func Map(ref *string, dfl string, tbl ...string) Option {
 	}
 }
 
+type Aggregated map[string]string
+
+func (a *Aggregated) Set(val string) {
+	for name, val := range *a {
+		opts[name].Set(val)
+	}
+}
+func (a *Aggregated) Reset() {
+	for name := range *a {
+		opts[name].Reset()
+	}
+}
+func (a *Aggregated) Push() {}
+
 type String struct {
 	ref *string
 	val string
@@ -185,6 +199,11 @@ var (
 		"width":  &Int{&width, width},
 		"scale":  &Int{&scale, scale},
 		"image":  &Image{},
+		"title": &Aggregated{
+			"center": "t",
+			"style":  "bold",
+			"size":   "large",
+		},
 	}
 )
 
