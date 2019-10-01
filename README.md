@@ -31,6 +31,7 @@ or text sizes. Currently, all defined comments are:
 	and `inspect` are required for this to work. Temporary files, of the form 
 	`slides-*.eps` are created in the temporary file directory (usually 
 	`/tmp`), and will *not* be automatically deleted.
+- `center`: can be set to `yes` (default), or ` ` no argument
 
 Other commands are ignored, any string that is not one of the 
 here listed values, is equal to the default value. 
