@@ -144,20 +144,18 @@ var (
 	}
 )
 
-func psEscape(line string) string {
-	var b strings.Builder
+func printLine(line string) {
 	escaped := strings.NewReplacer("(", "\\(", ")", "\\)").Replace(line)
-	b.WriteString("(")
+	fmt.Print("(")
 	for _, r := range escaped {
 		esc, ok := glyphs[r]
 		if ok {
-			fmt.Fprintf(&b, ") show /%s glyphshow (", esc)
+			fmt.Printf(") show /%s glyphshow (", esc)
 		} else {
-			b.WriteRune(r)
+			fmt.Printf("%c", r)
 		}
 	}
-	b.WriteString(") show")
-	return b.String()
+	fmt.Println(") show")
 }
 
 func printPage() {
@@ -185,7 +183,7 @@ func printPage() {
 			x = 40
 		}
 		fmt.Printf("%d %d moveto ", x, y)
-		fmt.Println(psEscape(line))
+		printLine(line)
 	}
 	fmt.Println("showpage")
 
