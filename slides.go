@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -99,6 +101,36 @@ func (r *Width) Set(val string) {
 func (r *Width) Reset()             { width = r.width }
 func (r *Width) Push()              { r.width = width }
 
+type Image struct{}
+
+func (r *Image) Set(val string) {
+	scale := fmt.Sprintf("%dx%d>", (width-width/8)*14, (height-height/8)*14)
+	f, err := ioutil.TempFile("", "slides-*.eps")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "couldn't create temporary file: ", err)
+		return
+	}
+	cmd1 := exec.Command("convert", val, "-resize", scale, f.Name())
+	err = cmd1.Run()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error while converting file: ", err)
+		return
+	}
+
+	cmd2 := exec.Command("identify", "-format", "%w %h", f.Name())
+	output, err := cmd2.Output()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error reading `identify' output: ", err)
+		return
+	}
+	fmt.Sscanf(string(output), "%d %d", &iwidth, &iheight)
+
+	images = append(images, f.Name())
+	image = true
+}
+func (r *Image) Reset() { image = false }
+func (r *Image) Push()  {}
+
 var (
 	cmdRe  = regexp.MustCompile(`^#\+([[:alpha:]]*)(!)?:?[[:space:]]*(.*?)[[:space:]]*$`)
 	glyphs = map[rune]string{
@@ -129,6 +161,9 @@ var (
 	indent = false
 	height  = 300
 	width   = 400
+	image = false
+	iwidth = 0
+	iheight = 0
 	
 	lines   []string
 	images  []string
@@ -141,6 +176,7 @@ var (
 		"indent": &Indent{indent},
 		"height": &Height{height},
 		"width":  &Width{width},
+		"image":  &Image{},
 	}
 )
 
@@ -163,10 +199,25 @@ func printPage() {
 		return
 	}
 	newpage = false
+	defer func() {
+		for _, opt := range opts {
+			opt.Reset()
+		}
+		lines = nil
+		newpage = true
+	}()
 
 	fmt.Printf("/width %d def\n", width)
 	fmt.Printf("/height %d def\n", height)
-	fmt.Printf("newpage /%s%s %d selectfont\n", font, style, size)
+	fmt.Println("newpage")
+
+	if image {
+		fmt.Printf("%d %d translate\n", (width-iwidth)/2, (height-iheight)/2)
+		fmt.Printf("(%s) run\n", images[0])
+		return
+	}
+	
+	fmt.Printf("/%s%s %d selectfont\n", font, style, size)
 
 	base := 150
 	count := len(lines)
@@ -186,12 +237,6 @@ func printPage() {
 		printLine(line)
 	}
 	fmt.Println("showpage")
-
-	for _, opt := range opts {
-		opt.Reset()
-	}
-	lines = nil
-	newpage = true
 }
 
 func main() {

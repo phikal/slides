@@ -25,6 +25,12 @@ or text sizes. Currently, all defined comments are:
 - `indent`: can be set to `yes` (default), ` ` (no argument)
 - `height`: can be set to an integer, an invalid number is ignored
 - `width`: can be set to an integer, an invalid number is ignored
+- `image`: will display an image (and only that image) on the next slide.
+
+	Argument is a path to any image file. [ImageMagick][im] tools `convert`
+	and `inspect` are required for this to work. Temporary files, of the form 
+	`slides-*.eps` are created in the temporary file directory (usually 
+	`/tmp`), and will *not* be automatically deleted.
 
 Other commands are ignored, any string that is not one of the 
 here listed values, is equal to the default value. 
@@ -72,5 +78,6 @@ legal
 details
 
 [go]: https://golang.org/
+[im]: https://imagemagick.org/index.php
 [gs]: https://www.ghostscript.com/
 [license]: ./LICENSE
