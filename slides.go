@@ -176,7 +176,7 @@ var (
 	newpage = true
 	opts    = map[string]Option{
 		"font":  Map(&font, "Helvetica", "mono", "Courier", "serif", "Times"),
-		"style": Map(&font, "", "bold", "Bold", "italic", "Italic"),
+		"style": Map(&style, "", "bold", "Bold", "italic", "Italic"),
 		"size": &Wrapped{
 			&Int{&size, size},
 			func(val string) {
