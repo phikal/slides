@@ -26,91 +26,74 @@ type Option interface {
 	Push()
 }
 
-type Font struct{ font string }
+type Wrapped struct {
+	opt   Option
+	parse func(val string)
+}
 
-func (r *Font) Set(val string) {
-	switch val {
-	case "serif":
-		font = "Times"
-	case "mono":
-		font = "Courier"
-	default:
-		font = "Helvetica"
+func (w *Wrapped) Set(val string) { w.parse(val) }
+func (w *Wrapped) Reset()         { w.opt.Reset() }
+func (w *Wrapped) Push()          { w.opt.Push() }
+
+func Map(ref *string, dfl string, tbl ...string) Option {
+	mapping := make(map[string]string)
+	for i := 0; i < len(tbl); i += 2 {
+		mapping[tbl[i]] = tbl[i+1]
+	}
+	opt := &String{ref, *ref}
+	return &Wrapped{
+		opt,
+		func(val string) {
+			str, ok := mapping[val]
+			if ok {
+				opt.Set(str)
+			} else {
+				opt.Set(dfl)
+			}
+		},
 	}
 }
-func (r *Font) Reset() { font = r.font }
-func (r *Font) Push()  { r.font = font }
 
-type Style struct{ style string }
-
-func (r *Style) Set(val string) {
-	switch val {
-	case "bold":
-		style = "Bold"
-	case "italics":
-		style = "Italics"
-	default:
-		style = ""
-	}
+type String struct {
+	ref *string
+	val string
 }
-func (r *Style) Reset() { style = r.style }
-func (r *Style) Push()  { r.style = style }
 
-type Size struct{ size int }
-
-func (r *Size) Set(val string) {
-	switch val {
-	case "huge":
-		size = height / 6
-	case "large":
-		size = height / 10
-	case "small":
-		size = height / 25
-	case "tiny":
-		size = height / 35
-	default:
-		size = height / 15
-	}
+func (s *String) Set(val string) {
+	*s.ref = val
 }
-func (r *Size) Reset() { size = r.size }
-func (r *Size) Push()  { r.size = size }
+func (s *String) Reset() { *s.ref = s.val }
+func (s *String) Push()  { s.val = *s.ref }
 
-type Indent struct{ indent bool }
+type Int struct {
+	ref *int
+	val int
+}
 
-func (r *Indent) Set(val string) { indent = (val != "") }
-func (r *Indent) Reset()         { indent = r.indent }
-func (r *Indent) Push()          { r.indent = indent }
-
-type Height struct{ height int }
-
-func (r *Height) Set(val string) {
-	i, err := strconv.Atoi(val)
+func (i *Int) Set(val string) {
+	j, err := strconv.Atoi(val)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "invalid height value %q in line %d\n", val, linum)
+		fmt.Fprintf(os.Stderr, "invalid int value %q in line %d\n", val, linum)
 		return
 	}
-	height = i
+	*i.ref = j
 }
-func (r *Height) Reset() { height = r.height }
-func (r *Height) Push()  { r.height = height }
+func (i *Int) Reset() { *i.ref = i.val }
+func (i *Int) Push()  { i.val = *i.ref }
 
-type Width struct{ width int }
-
-func (r *Width) Set(val string) {
-	i, err := strconv.Atoi(val)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "invalid height value %q in line %d\n", val, linum)
-		return
-	}
-	width = i
+type Bool struct {
+	ref *bool
+	val bool
 }
-func (r *Width) Reset() { width = r.width }
-func (r *Width) Push()  { r.width = width }
+
+func (b *Bool) Set(val string) { *b.ref = (val != "") }
+func (b *Bool) Reset()         { *b.ref = b.val }
+func (b *Bool) Push()          { b.val = *b.ref }
 
 type Image struct{}
 
 func (r *Image) Set(val string) {
-	scale := fmt.Sprintf("%dx%d>", (width-width/8)*14, (height-height/8)*14)
+	scale := fmt.Sprintf("%dx%d>", (width-width/8)*scale, (height-height/8)*scale)
 	f, err := ioutil.TempFile("", "slides-*.eps")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "couldn't create temporary file: ", err)
@@ -164,6 +147,7 @@ var (
 	font    = "Helvetica"
 	style   = ""
 	size    = 20
+	scale   = 10
 	indent  = false
 	height  = 300
 	width   = 400
@@ -176,12 +160,28 @@ var (
 	linum   = 1
 	newpage = true
 	opts    = map[string]Option{
-		"font":   &Font{font},
-		"style":  &Style{style},
-		"size":   &Size{size},
-		"indent": &Indent{indent},
-		"height": &Height{height},
-		"width":  &Width{width},
+		"font":  Map(&font, "Helvetica", "mono", "Courier", "serif", "Times"),
+		"style": Map(&font, "", "bold", "Bold", "italic", "Italic"),
+		"size": &Wrapped{
+			&Int{&size, size},
+			func(val string) {
+				switch val {
+				case "huge":
+					size = height / 6
+				case "large":
+					size = height / 10
+				case "small":
+					size = height / 25
+				case "tiny":
+					size = height / 30
+				default:
+					size = height / 15
+				}
+			}},
+		"indent": &Bool{&indent, indent},
+		"height": &Int{&height, height},
+		"width":  &Int{&width, width},
+		"scale":  &Int{&scale, scale},
 		"image":  &Image{},
 	}
 )
@@ -225,10 +225,10 @@ func printPage() {
 
 	fmt.Printf("/%s%s %d selectfont\n", font, style, size)
 
-	base := height/2
+	base := height / 2
 	count := len(lines)
 	if count&1 != 1 {
-		base -= size/2
+		base -= size / 2
 	}
 	for i, line := range lines {
 		if line == "" {
@@ -237,7 +237,7 @@ func printPage() {
 
 		y, x := base-size*(i-count/2), width/20
 		if indent {
-			x = width/10
+			x = width / 10
 		}
 		fmt.Printf("%d %d moveto ", x, y)
 		printLine(line)
@@ -269,7 +269,12 @@ func main() {
 		case strings.HasPrefix(line, "#+"):
 			// "command" comments are parsed seperatly
 			sub := cmdRe.FindStringSubmatch(line)
-			opt := opts[strings.ToLower(sub[1])]
+			opt, ok := opts[strings.ToLower(sub[1])]
+			if !ok {
+				fmt.Fprintf(os.Stderr, "unknown command %q in line %d\n",
+					sub[1], linum)
+				break
+			}
 			opt.Set(strings.ToLower(sub[3]))
 			if sub[2] != "" {
 				opt.Push()
