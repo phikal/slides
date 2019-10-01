@@ -27,6 +27,7 @@ type Option interface {
 }
 
 type Font struct{ font string }
+
 func (r *Font) Set(val string) {
 	switch val {
 	case "serif":
@@ -37,10 +38,11 @@ func (r *Font) Set(val string) {
 		font = "Helvetica"
 	}
 }
-func (r *Font) Reset()             { font = r.font }
-func (r *Font) Push()              { r.font = font }
+func (r *Font) Reset() { font = r.font }
+func (r *Font) Push()  { r.font = font }
 
 type Style struct{ style string }
+
 func (r *Style) Set(val string) {
 	switch val {
 	case "bold":
@@ -51,10 +53,11 @@ func (r *Style) Set(val string) {
 		style = ""
 	}
 }
-func (r *Style) Reset()             { style = r.style }
-func (r *Style) Push()              { r.style = style }
+func (r *Style) Reset() { style = r.style }
+func (r *Style) Push()  { r.style = style }
 
 type Size struct{ size int }
+
 func (r *Size) Set(val string) {
 	switch val {
 	case "huge":
@@ -69,15 +72,17 @@ func (r *Size) Set(val string) {
 		size = height / 15
 	}
 }
-func (r *Size) Reset()             { size = r.size }
-func (r *Size) Push()              { r.size = size }
+func (r *Size) Reset() { size = r.size }
+func (r *Size) Push()  { r.size = size }
 
 type Indent struct{ indent bool }
-func (r *Indent) Set(val string)     { indent = (val != "") }
-func (r *Indent) Reset()             { indent = r.indent }
-func (r *Indent) Push()              { r.indent = indent }
 
-type Height struct { height int }
+func (r *Indent) Set(val string) { indent = (val != "") }
+func (r *Indent) Reset()         { indent = r.indent }
+func (r *Indent) Push()          { r.indent = indent }
+
+type Height struct{ height int }
+
 func (r *Height) Set(val string) {
 	i, err := strconv.Atoi(val)
 	if err != nil {
@@ -86,10 +91,11 @@ func (r *Height) Set(val string) {
 	}
 	height = i
 }
-func (r *Height) Reset()             { height = r.height }
-func (r *Height) Push()              { r.height = height }
+func (r *Height) Reset() { height = r.height }
+func (r *Height) Push()  { r.height = height }
 
-type Width struct { width int }
+type Width struct{ width int }
+
 func (r *Width) Set(val string) {
 	i, err := strconv.Atoi(val)
 	if err != nil {
@@ -98,8 +104,8 @@ func (r *Width) Set(val string) {
 	}
 	width = i
 }
-func (r *Width) Reset()             { width = r.width }
-func (r *Width) Push()              { r.width = width }
+func (r *Width) Reset() { width = r.width }
+func (r *Width) Push()  { r.width = width }
 
 type Image struct{}
 
@@ -155,16 +161,16 @@ var (
 		'Ü': "Udieresis",
 	}
 
-	font = "Helvetica"
-	style = ""
-	size = 20
-	indent = false
+	font    = "Helvetica"
+	style   = ""
+	size    = 20
+	indent  = false
 	height  = 300
 	width   = 400
-	image = false
-	iwidth = 0
+	image   = false
+	iwidth  = 0
 	iheight = 0
-	
+
 	lines   []string
 	images  []string
 	linum   = 1
@@ -216,7 +222,7 @@ func printPage() {
 		fmt.Printf("(%s) run\n", images[0])
 		return
 	}
-	
+
 	fmt.Printf("/%s%s %d selectfont\n", font, style, size)
 
 	base := 150
