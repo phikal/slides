@@ -22,71 +22,61 @@ type Option interface {
 	Set(val string)
 	Reset()
 	Push()
-	Value() interface{}
 }
 
-type Font struct{ current, dflt string }
-
-func (f *Font) Set(val string) {
+type Font struct{ font string }
+func (r *Font) Set(val string) {
 	switch val {
 	case "serif":
-		f.current = "Times"
+		font = "Times"
 	case "mono":
-		f.current = "Courier"
+		font = "Courier"
 	default:
-		f.current = "Helvetica"
+		font = "Helvetica"
 	}
 }
-func (f *Font) Reset()             { f.current = f.dflt }
-func (f *Font) Push()              { f.dflt = f.current }
-func (f *Font) Value() interface{} { return f.current }
+func (r *Font) Reset()             { font = r.font }
+func (r *Font) Push()              { r.font = font }
 
-type Style struct{ current, dflt string }
-
-func (f *Style) Set(val string) {
+type Style struct{ style string }
+func (r *Style) Set(val string) {
 	switch val {
 	case "bold":
-		f.current = "Bold"
+		style = "Bold"
 	case "italics":
-		f.current = "Italics"
+		style = "Italics"
 	default:
-		f.current = ""
+		style = ""
 	}
 }
-func (f *Style) Reset()             { f.current = f.dflt }
-func (f *Style) Push()              { f.dflt = f.current }
-func (f *Style) Value() interface{} { return f.current }
+func (r *Style) Reset()             { style = r.style }
+func (r *Style) Push()              { r.style = style }
 
-type Size struct{ current, dflt int }
-
-func (f *Size) Set(val string) {
+type Size struct{ size int }
+func (r *Size) Set(val string) {
 	switch val {
 	case "huge":
-		f.current = height / 6
+		size = height / 6
 	case "large":
-		f.current = height / 10
+		size = height / 10
 	case "small":
-		f.current = height / 25
+		size = height / 25
 	case "tiny":
-		f.current = height / 35
+		size = height / 35
 	default:
-		f.current = height / 15
+		size = height / 15
 	}
 }
-func (f *Size) Reset()             { f.current = f.dflt }
-func (f *Size) Push()              { f.dflt = f.current }
-func (f *Size) Value() interface{} { return f.current }
+func (r *Size) Reset()             { size = r.size }
+func (r *Size) Push()              { r.size = size }
 
-type Indent struct{ current, dflt bool }
-
-func (f *Indent) Set(val string)     { f.current = (val != "") }
-func (f *Indent) Reset()             { f.current = f.dflt }
-func (f *Indent) Push()              { f.dflt = f.current }
-func (f *Indent) Value() interface{} { return f.current }
+type Indent struct{ indent bool }
+func (r *Indent) Set(val string)     { indent = (val != "") }
+func (r *Indent) Reset()             { indent = r.indent }
+func (r *Indent) Push()              { r.indent = indent }
 
 type Height struct { height int }
-
-func (h *Height) Set(val string) {
+func (r *Height) Set(val string) {
 	i, err := strconv.Atoi(val)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid height value %q in line %d\n", val, linum)
@@ -94,13 +84,11 @@ func (h *Height) Set(val string) {
 	}
 	height = i
 }
-func (h *Height) Reset()             { height = h.height }
-func (h *Height) Push()              { h.height = height }
-func (h *Height) Value() interface{} { return height }
+func (r *Height) Reset()             { height = r.height }
+func (r *Height) Push()              { r.height = height }
 
 type Width struct { width int }
-
-func (w *Width) Set(val string) {
+func (r *Width) Set(val string) {
 	i, err := strconv.Atoi(val)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid height value %q in line %d\n", val, linum)
@@ -108,9 +96,8 @@ func (w *Width) Set(val string) {
 	}
 	width = i
 }
-func (w *Width) Reset()             { width = w.width }
-func (w *Width) Push()              { w.width = width }
-func (w *Width) Value() interface{} { return width }
+func (r *Width) Reset()             { width = r.width }
+func (r *Width) Push()              { r.width = width }
 
 var (
 	cmdRe  = regexp.MustCompile(`^#\+([[:alpha:]]*)(!)?:?[[:space:]]*(.*?)[[:space:]]*$`)
@@ -136,17 +123,22 @@ var (
 		'Ü': "Udieresis",
 	}
 
+	font = "Helvetica"
+	style = ""
+	size = 20
+	indent = false
 	height  = 300
 	width   = 400
+	
 	lines   []string
 	images  []string
 	linum   = 1
 	newpage = true
 	opts    = map[string]Option{
-		"font":   &Font{dflt: "Helvetica"},
-		"style":  &Style{},
-		"size":   &Size{dflt: 20},
-		"indent": &Indent{},
+		"font":   &Font{font},
+		"style":  &Style{style},
+		"size":   &Size{size},
+		"indent": &Indent{indent},
 		"height": &Height{height},
 		"width":  &Width{width},
 	}
@@ -173,11 +165,6 @@ func printPage() {
 		return
 	}
 	newpage = false
-
-	size := opts["size"].Value().(int)
-	font := opts["font"].Value().(string)
-	style := opts["style"].Value().(string)
-	indent := opts["indent"].Value().(bool)
 
 	fmt.Printf("/width %d def\n", width)
 	fmt.Printf("/height %d def\n", height)
