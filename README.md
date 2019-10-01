@@ -22,7 +22,9 @@ or text sizes. Currently, all defined comments are:
 - `size`: can be set to `huge`, `large`, `normal` (default), `small` or `tiny`
 - `font`: can be set to `sans` (default), `serif`, `mono`
 - `style`: can be set to `bold`, `italics`, `none` (default)
-- `indent`: can be set to `yes` (default), `` (no argument)
+- `indent`: can be set to `yes` (default), ` ` (no argument)
+- `height`: can be set to an integer, an invalid number is ignored
+- `width`: can be set to an integer, an invalid number is ignored
 
 Other commands are ignored, any string that is not one of the 
 here listed values, is equal to the default value. 

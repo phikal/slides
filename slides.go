@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
 const header = `%PS
+/height 300 def
+/width 400 def
 /newpage {
-    << /PageSize [300 400] /Orientation 3 >> setpagedevice
+    << /PageSize [height width] /Orientation 3 >> setpagedevice
     90 rotate
     0 -300 translate
 } def`
@@ -59,15 +62,15 @@ type Size struct{ current, dflt int }
 func (f *Size) Set(val string) {
 	switch val {
 	case "huge":
-		f.current = 48
+		f.current = height / 6
 	case "large":
-		f.current = 30
+		f.current = height / 10
 	case "small":
-		f.current = 12
+		f.current = height / 25
 	case "tiny":
-		f.current = 8
+		f.current = height / 35
 	default:
-		f.current = 20
+		f.current = height / 15
 	}
 }
 func (f *Size) Reset()             { f.current = f.dflt }
@@ -80,6 +83,34 @@ func (f *Indent) Set(val string)     { f.current = (val != "") }
 func (f *Indent) Reset()             { f.current = f.dflt }
 func (f *Indent) Push()              { f.dflt = f.current }
 func (f *Indent) Value() interface{} { return f.current }
+
+type Height struct { height int }
+
+func (h *Height) Set(val string) {
+	i, err := strconv.Atoi(val)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid height value %q in line %d\n", val, linum)
+		return
+	}
+	height = i
+}
+func (h *Height) Reset()             { height = h.height }
+func (h *Height) Push()              { h.height = height }
+func (h *Height) Value() interface{} { return height }
+
+type Width struct { width int }
+
+func (w *Width) Set(val string) {
+	i, err := strconv.Atoi(val)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid height value %q in line %d\n", val, linum)
+		return
+	}
+	width = i
+}
+func (w *Width) Reset()             { width = w.width }
+func (w *Width) Push()              { w.width = width }
+func (w *Width) Value() interface{} { return width }
 
 var (
 	cmdRe  = regexp.MustCompile(`^#\+([[:alpha:]]*)(!)?:?[[:space:]]*(.*?)[[:space:]]*$`)
@@ -105,7 +136,10 @@ var (
 		'Ü': "Udieresis",
 	}
 
+	height  = 300
+	width   = 400
 	lines   []string
+	images  []string
 	linum   = 1
 	newpage = true
 	opts    = map[string]Option{
@@ -113,6 +147,8 @@ var (
 		"style":  &Style{},
 		"size":   &Size{dflt: 20},
 		"indent": &Indent{},
+		"height": &Height{height},
+		"width":  &Width{width},
 	}
 )
 
@@ -143,6 +179,8 @@ func printPage() {
 	style := opts["style"].Value().(string)
 	indent := opts["indent"].Value().(bool)
 
+	fmt.Printf("/width %d def\n", width)
+	fmt.Printf("/height %d def\n", height)
 	fmt.Printf("newpage /%s%s %d selectfont\n", font, style, size)
 
 	base := 150
