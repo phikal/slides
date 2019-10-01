@@ -152,6 +152,7 @@ var (
 	height  = 300
 	width   = 400
 	image   = false
+	center  = false
 	iwidth  = 0
 	iheight = 0
 
@@ -178,6 +179,7 @@ var (
 					size = height / 15
 				}
 			}},
+		"center": &Bool{&center, center},
 		"indent": &Bool{&indent, indent},
 		"height": &Int{&height, height},
 		"width":  &Int{&width, width},
@@ -236,10 +238,17 @@ func printPage() {
 		}
 
 		y, x := base-size*(i-count/2), width/20
-		if indent {
-			x = width / 10
+		if center {
+			fmt.Println("gsave 0 -1000 moveto ")
+			printLine(line)
+			fmt.Println("currentpoint pop 400 exch sub 2 div grestore")
+			fmt.Printf("%d moveto ", y)
+		} else {
+			if indent {
+				x = width / 10
+			}
+			fmt.Printf("%d %d moveto ", x, y)
 		}
-		fmt.Printf("%d %d moveto ", x, y)
 		printLine(line)
 	}
 	fmt.Println("showpage")
