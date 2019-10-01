@@ -208,7 +208,7 @@ var (
 )
 
 func printLine(line string) {
-	escaped := strings.NewReplacer("(", "\\(", ")", "\\)").Replace(line)
+	escaped := strings.NewReplacer("(", "\\(", ")", "\\)", "\\", "\\\\").Replace(line)
 	fmt.Print("(")
 	for _, r := range escaped {
 		esc, ok := glyphs[r]
