@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"os"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -107,31 +109,19 @@ func (b *Bool) Push()          { b.val = *b.ref }
 type Image struct{}
 
 func (r *Image) Set(val string) {
-	scale := fmt.Sprintf("%dx%d>", (width-width/8)*scale, (height-height/8)*scale)
-	f, err := ioutil.TempFile("", "slides-*.eps")
+	file, err := os.Open(val)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "couldn't create temporary file: ", err)
+		fmt.Fprintln(os.Stderr, "couldn't open image file: ", err)
 		return
 	}
-	cmd1 := exec.Command("convert", val, "-resize", scale, f.Name())
-	err = cmd1.Run()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "error while converting file: ", err)
-		return
-	}
+	defer file.Close()
 
-	cmd2 := exec.Command("identify", "-format", "%w %h", f.Name())
-	output, err := cmd2.Output()
+	img, _, err = image.Decode(file)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "error reading `identify' output: ", err)
-		return
+		fmt.Fprintln(os.Stderr, "error while decoding image: ", err)
 	}
-	fmt.Sscanf(string(output), "%d %d", &iwidth, &iheight)
-
-	images = append(images, f.Name())
-	image = true
 }
-func (r *Image) Reset() { image = false }
+func (r *Image) Reset() { img = nil }
 func (r *Image) Push()  {}
 
 var (
@@ -161,17 +151,14 @@ var (
 	font    = "Helvetica"
 	style   = ""
 	size    = 20
-	scale   = 10
 	indent  = false
 	height  = 300
 	width   = 400
-	image   = false
+	padding = 0
 	center  = false
-	iwidth  = 0
-	iheight = 0
 
 	lines   []string
-	images  []string
+	img     image.Image
 	linum   = 1
 	newpage = true
 	opts    = map[string]Option{
@@ -193,12 +180,12 @@ var (
 					size = height / 15
 				}
 			}},
-		"center": &Bool{&center, center},
-		"indent": &Bool{&indent, indent},
-		"height": &Int{&height, height},
-		"width":  &Int{&width, width},
-		"scale":  &Int{&scale, scale},
-		"image":  &Image{},
+		"center":  &Bool{&center, center},
+		"indent":  &Bool{&indent, indent},
+		"height":  &Int{&height, height},
+		"width":   &Int{&width, width},
+		"padding": &Int{&padding, padding},
+		"image":   &Image{},
 		"title": &Aggregated{
 			"center": "t",
 			"style":  "bold",
@@ -222,7 +209,7 @@ func printLine(line string) {
 }
 
 func printPage() {
-	if !newpage || lines == nil {
+	if img == nil && (!newpage || lines == nil) {
 		return
 	}
 	newpage = false
@@ -238,9 +225,29 @@ func printPage() {
 	fmt.Printf("/height %d def\n", height)
 	fmt.Println("newpage")
 
-	if image {
-		fmt.Printf("%d %d translate\n", (width-iwidth)/2, (height-iheight)/2)
-		fmt.Printf("(%s) run\n", images[0])
+	if img != nil {
+		var scale, xoff, yoff float64
+		bounds := img.Bounds()
+		iheight := bounds.Max.Y - bounds.Min.Y
+		iwidth := bounds.Max.X - bounds.Min.X
+		if iwidth/width > iheight/height {
+			scale = float64(width-2*padding) / float64(iwidth)
+			yoff += (float64(iheight)*scale - float64(height-2*padding)) / 2
+		} else {
+			scale = float64(height-2*padding) / float64(iheight)
+			xoff += (float64(iwidth)*scale - float64(width-2*padding)) / 2
+		}
+		fmt.Printf("%d %d 16 [%g 0 0 %g %g %g] {<",
+			iwidth, iheight, 1/scale, 1/scale,
+			(-float64(padding)+xoff)/scale,
+			(-float64(padding)+yoff)/scale)
+		for y := bounds.Max.Y - 1; y >= bounds.Min.Y; y-- {
+			for x := bounds.Min.X; x < bounds.Max.X; x++ {
+				r, g, b, _ := img.At(x, y).RGBA()
+				fmt.Printf("%04x%04x%04x", r, g, b)
+			}
+		}
+		fmt.Println(">} false 3 colorimage showpage")
 		return
 	}
 
