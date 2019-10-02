@@ -26,11 +26,10 @@ or text sizes. Currently, all defined comments are:
 - `height`: can be set to an integer, an invalid number is ignored
 - `width`: can be set to an integer, an invalid number is ignored
 - `image`: will display an image (and only that image) on the next slide.
-
-	Argument is a path to any image file. [ImageMagick][im] tools `convert`
-	and `inspect` are required for this to work. Temporary files, of the form 
-	`slides-*.eps` are created in the temporary file directory (usually 
-	`/tmp`), and will *not* be automatically deleted.
+  Argument is a path to any image file. Currently png, jpeg and gif is
+  supported, without the need of any external tools.
+- `padding`: points of padding around an image, set to an integer, an 
+  invalid number is ignored
 - `center`: can be set to `yes` (default), or ` ` no argument
 
 Other commands are ignored, any string that is not one of the 
@@ -49,6 +48,18 @@ means that one cannot do
 	another line
 
 and expect the first line to be serif, and the second to be serif.
+
+An exception is the image command, that counts as a complete slide
+by itself. This means that one doesn't have to write
+
+	#+image me.png
+	ignored text
+
+but 
+
+	#+image me.png
+
+will suffice.
 
 An optional colon (`:`) after the option name (including `!`) is
 ignored.
@@ -79,6 +90,5 @@ legal
 details
 
 [go]: https://golang.org/
-[im]: https://imagemagick.org/index.php
 [gs]: https://www.ghostscript.com/
 [license]: ./LICENSE
