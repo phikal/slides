@@ -265,9 +265,9 @@ func printPage() {
 
 		y, x := base-size*(i-count/2), width/20
 		if center {
-			fmt.Println("gsave 0 -1000 moveto ")
+			fmt.Println("0 -10000 moveto ")
 			printLine(line)
-			fmt.Println("currentpoint pop 400 exch sub 2 div grestore")
+			fmt.Println("currentpoint pop 400 exch sub 2 div")
 			fmt.Printf("%d moveto ", y)
 		} else {
 			if indent {
