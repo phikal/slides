@@ -17,52 +17,8 @@ will *not* be reflowed.
 
 Comments are either just text or "command comments", designated
 with an extra `+` after the `#`. These can be used to set fonts
-or text sizes. Currently, all defined comments are:
-
-- `size`: can be set to `huge`, `large`, `normal` (default), `small` or `tiny`
-- `font`: can be set to `sans` (default), `serif`, `mono`
-- `style`: can be set to `bold`, `italics`, `none` (default)
-- `indent`: can be set to `yes` (default), ` ` (no argument)
-- `height`: can be set to an integer, an invalid number is ignored
-- `width`: can be set to an integer, an invalid number is ignored
-- `image`: will display an image (and only that image) on the next slide.
-  Argument is a path to any image file. Currently png, jpeg and gif is
-  supported, without the need of any external tools.
-- `padding`: points of padding around an image, set to an integer, an 
-  invalid number is ignored
-- `center`: can be set to `yes` (default), or ` ` no argument
-
-Other commands are ignored, any string that is not one of the 
-here listed values, is equal to the default value. 
-
-Values are only valid for one slide. To make values valid for the 
-rest of the document, or until again reset, add a `!` after the 
-option name.
-
-Values take effect at the end of a slide, i.e. an empty line. This
-means that one cannot do
-
-	#+font sans
-	one line
-	#+font serif
-	another line
-
-and expect the first line to be serif, and the second to be serif.
-
-An exception is the image command, that counts as a complete slide
-by itself. This means that one doesn't have to write
-
-	#+image me.png
-	ignored text
-
-but 
-
-	#+image me.png
-
-will suffice.
-
-An optional colon (`:`) after the option name (including `!`) is
-ignored.
+or text sizes. All commands are listed and explained in
+[this][article] introductory article to `slides`.
 
 usage
 -----
@@ -92,3 +48,4 @@ details
 [go]: https://golang.org/
 [gs]: https://www.ghostscript.com/
 [license]: ./LICENSE
+[article]: https://zge.us.to/slides.html
