@@ -252,8 +252,7 @@ func printPage() {
 	}
 
 	fmt.Printf("/%s%s %d selectfont\n", font, style, size)
-
-	base := height / 2
+	base := height / 2 - size / 4
 	count := len(lines)
 	if count&1 != 1 {
 		base -= size / 2
