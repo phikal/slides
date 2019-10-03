@@ -237,14 +237,14 @@ func printPage() {
 			scale = float64(height-2*padding) / float64(iheight)
 			xoff += (float64(iwidth)*scale - float64(width-2*padding)) / 2
 		}
-		fmt.Printf("%d %d 16 [%g 0 0 %g %g %g] {<",
+		fmt.Printf("%d %d 8 [%g 0 0 %g %g %g] {<",
 			iwidth, iheight, 1/scale, 1/scale,
 			(-float64(padding)+xoff)/scale,
 			(-float64(padding)+yoff)/scale)
 		for y := bounds.Max.Y - 1; y >= bounds.Min.Y; y-- {
 			for x := bounds.Min.X; x < bounds.Max.X; x++ {
 				r, g, b, _ := img.At(x, y).RGBA()
-				fmt.Printf("%04x%04x%04x", r, g, b)
+				fmt.Printf("%02x%02x%02x", r/0x101, g/0x101, b/0x0101)
 			}
 		}
 		fmt.Println(">} false 3 colorimage showpage")
