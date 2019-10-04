@@ -76,7 +76,7 @@ type String struct {
 }
 
 func (s *String) Set(val string) {
-	*s.ref = val
+	*s.ref = strings.ToLower(val)
 }
 func (s *String) Reset() { *s.ref = s.val }
 func (s *String) Push()  { s.val = *s.ref }
@@ -311,7 +311,7 @@ func main() {
 					sub[1], linum)
 				break
 			}
-			opt.Set(strings.ToLower(sub[3]))
+			opt.Set(sub[3])
 			if sub[2] != "" {
 				opt.Push()
 			}
