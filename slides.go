@@ -18,12 +18,13 @@ var (
 func main() {
 	in := os.Stdin
 	if len(os.Args) > 1 {
-		var err error
-		in, err = os.Open(os.Args[1])
+		file, err := os.Open(os.Args[1])
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
+		defer file.Close()
+		in = file
 	}
 
 	fmt.Println(header)
