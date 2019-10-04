@@ -155,6 +155,7 @@ var (
 	height  = 300
 	width   = 400
 	padding = 0
+	fill = true
 	center  = false
 
 	lines   []string
@@ -185,6 +186,7 @@ var (
 		"height":  &Int{&height, height},
 		"width":   &Int{&width, width},
 		"padding": &Int{&padding, padding},
+		"fill":    &Bool{&fill, fill},
 		"image":   &Image{},
 		"title": &Aggregated{
 			"center": "t",
@@ -230,7 +232,7 @@ func printPage() {
 		bounds := img.Bounds()
 		iheight := bounds.Max.Y - bounds.Min.Y
 		iwidth := bounds.Max.X - bounds.Min.X
-		if iwidth/width > iheight/height {
+		if fill != (iwidth/width > iheight/height) {
 			scale = float64(width-2*padding) / float64(iwidth)
 			yoff += (float64(iheight)*scale - float64(height-2*padding)) / 2
 		} else {
