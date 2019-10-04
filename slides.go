@@ -300,6 +300,8 @@ func main() {
 		case strings.HasPrefix(line, "\\"):
 			// escaped lines are inserted verbatim
 			lines = append(lines, line[1:])
+		case strings.HasPrefix(line, "@"):
+			opts["image"].Set(line[1:])
 		case strings.HasPrefix(line, "#+"):
 			// "command" comments are parsed seperatly
 			sub := cmdRe.FindStringSubmatch(line)
