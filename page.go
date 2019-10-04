@@ -32,16 +32,14 @@ func printLine(line string) {
 }
 
 func printPage() {
-	if img == nil && (!newpage || lines == nil) {
+	if img == nil && lines == nil {
 		return
 	}
-	newpage = false
 	defer func() {
 		for _, opt := range opts {
 			opt.Reset()
 		}
 		lines = nil
-		newpage = true
 	}()
 
 	fmt.Printf("/width %d def\n", width)

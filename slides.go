@@ -13,7 +13,6 @@ import (
 var (
 	lines   []string
 	linum   = 1
-	newpage = true
 )
 
 func main() {
